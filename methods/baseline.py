@@ -1,7 +1,18 @@
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
-
+import sys; sys.path.append("..")
 from models.basemodel import CNN_DEAP
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+## load data
+import numpy as np
+data = np.load('../datasets/data/data.npy') # (32, 40, 40, 101)
+arousal_labels = np.load('../datasets/data/arousal_labels.npy')
+valence_labels = np.load('../datasets/data/valence_labels.npy')
+
 
 class EEGDataset(Dataset):
     
@@ -40,8 +51,8 @@ class TrainModel():
             index_train = np.delete(index, i)
             index_test = i
             
-            print(self.data.shape)
-            print(self.labels.shape)
+            print("data shape: ", self.data.shape)
+            print("label shape: ", self.labels.shape)
             
             # 划分数据集
             data_test = self.data[index_test, :, :, :]
@@ -64,8 +75,8 @@ class TrainModel():
             data_val = torch.from_numpy(data_val).float()
             labels_val = torch.from_numpy(labels_val).long()
                 
-            print(data_test.shape)
-            print(labels_test.shape)
+            print("test data shape: ", data_test.shape)
+            print("test label shape: ", labels_test.shape)
                 
             data_test = torch.from_numpy(data_test).float()
             labels_test = torch.from_numpy(labels_test).long()
@@ -114,10 +125,12 @@ class TrainModel():
         def train_step(x, y):
             model.train()
             yhat = model(x)
+            # print("yhat, y", yhat.shape, y.shape)
+            # sys.exit(0)
             pred = yhat.max(1)[1]
             correct = (pred == y).sum()
             acc = correct.item()/len(pred)
-            loss_r = self.regulization(model, self.Lambda)
+            # loss_r = self.regulization(model, self.Lambda)
             loss = loss_fn(yhat, y)
             optimzier.zero_grad()
             loss.backward()
@@ -148,14 +161,18 @@ class TrainModel():
         train_loader = DataLoader(dataset=dataset_train, batch_size=self.batch_size, shuffle=True, pin_memory=False)
         val_loader = DataLoader(dataset=dataset_val, batch_size=self.batch_size,shuffle=True, pin_memory=False)
         test_loader = DataLoader(dataset=dataset_test, batch_size=self.batch_size, shuffle=True, pin_memory=False)
-        
+       
+        losses = []
+        accs = [] 
         for epoch in range(self.epoch):
             loss_epoch = []
             acc_epoch = []
             for i, (x_batch, y_batch) in enumerate(train_loader):
 
-                x_batch = x_batch.to(self.device)
-                y_batch = y_batch.to(self.device)
+                x_batch = x_batch.to(self.device) # [50, 1, 40, 101]
+                # print("x_batch, y_batch: ", x_batch.shape, y_batch.shape)
+                # sys.exit(1)
+                y_batch = y_batch.to(self.device) # [50]
 
                 loss, acc = train_step(x_batch, y_batch)
                 loss_epoch.append(loss)
@@ -165,9 +182,13 @@ class TrainModel():
             accs.append(sum(acc_epoch)/len(acc_epoch))
             loss_epoch = []
             acc_epoch = []
-            print('Epoch [{}/{}], Loss:{:.4f}, Acc:{:.4f}'.format(epoch+1, num_epochs, losses[-1], accs[-1]))
+            print('Epoch [{}/{}], Loss:{:.4f}, Acc:{:.4f}'.format(epoch+1, self.epoch, losses[-1], accs[-1]))
 
             ##############Validation process####################
+            val_losses = []
+            val_acc = []
+            Acc_val, Loss_val = [], []
+
             with torch.no_grad():
                 for x_val, y_val in val_loader:
                     x_val = x_val.to(self.device)
@@ -190,11 +211,10 @@ class TrainModel():
                 Acc_val.append(sum(val_acc)/len(val_acc))
                 Loss_val.append(sum(val_losses)/len(val_losses))
                 print('Evaluation Loss:{:.4f}, Acc:{:.4f}'.format(Loss_val[-1], Acc_val[-1]))
-                val_losses = []
-                val_acc = []
                 
         #########test process############
-        model = torch.load('valence_max_model.pt')
+        test_losses, test_acc = [], []
+        # model = torch.load('valence_max_model.pt')
         with torch.no_grad():
             for x_test, y_test in test_loader:
                 x_test = x_test.to(self.device)
@@ -223,6 +243,6 @@ if __name__ == "__main__":
                    labels=valence_labels,
                    input_size=data[0,0].shape,
                    learning_rate=0.00001,
-                   batch_size=50,
+                   batch_size=1,
                    epoch=5)
     train.leave_one_subject_out()
