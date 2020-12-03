@@ -5,7 +5,7 @@ import torch.nn as nn
 import sys
 
 class CNN_DEAP(nn.Module):
-    def __init__(self, num_class, input_size):
+    def __init__(self, num_class=2, input_size=[40, 101]):
         super(CNN_DEAP, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(1, 100 ,kernel_size=3, padding=1),
@@ -45,4 +45,5 @@ if __name__ == "__main__":
     print(model)
     print("=="*20)
     x = torch.rand(1, 1, 40, 101) # batchsize, trial, channels, data
+    print(x.shape)
     print(model(x))

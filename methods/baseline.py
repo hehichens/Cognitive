@@ -125,8 +125,8 @@ class TrainModel():
         def train_step(x, y):
             model.train()
             yhat = model(x)
-            # print("yhat, y", yhat.shape, y.shape)
-            # sys.exit(0)
+            print("x, yhat, y", x.shape, yhat.dtype, y.dtype)
+            sys.exit(0)
             pred = yhat.max(1)[1]
             correct = (pred == y).sum()
             acc = correct.item()/len(pred)
@@ -169,10 +169,10 @@ class TrainModel():
             acc_epoch = []
             for i, (x_batch, y_batch) in enumerate(train_loader):
 
-                x_batch = x_batch.to(self.device) # [50, 1, 40, 101]
+                x_batch = x_batch.to(self.device) # [batch_size, 1, 40, 101]
                 # print("x_batch, y_batch: ", x_batch.shape, y_batch.shape)
                 # sys.exit(1)
-                y_batch = y_batch.to(self.device) # [50]
+                y_batch = y_batch.to(self.device) # [batch_size]
 
                 loss, acc = train_step(x_batch, y_batch)
                 loss_epoch.append(loss)
