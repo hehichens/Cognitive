@@ -25,6 +25,8 @@ def options():
         default="../weights/", type=str)
     parser.add_argument("--checkpoint_path", help="checkpoint path", \
         default="../weights/checkpoint.pth", type=str)
+    parser.add_argument("--pretrained", help="wheather to load checkpoint",\
+        default=False, type=bool)
 
     
     ## NetWork Parameters
@@ -43,7 +45,7 @@ def options():
     parser.add_argument("--hidden_size", help="hidden layer size", \
         default=128, type=int)
     parser.add_argument("--dropout_rate", help="dropout rate", \
-        default=0.2, type=float)
+        default=0.25, type=float)
 
 
     ## Visualize Parameters

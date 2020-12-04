@@ -69,6 +69,11 @@ class EEGDataset(Dataset):
     def __len__(self):
         return len(self.y)
 
+    
+## Accuracy
+def Accuracy(y_hat, y):
+    pred = y_hat.max(1)[1]
+    return (pred == y).sum().item() / len(pred)
 
 ## load EEG Datasets
 def load_EEG_Datasets(data, label, batch_size=1, is_val=False):
