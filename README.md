@@ -17,11 +17,16 @@
 -
 
 ## Examples
-1. 使用 python -m visdom.server 打开端口
+1. 打开 visdom 
+```
+python -m visdom.server  port 8888
+```
+
+打开端口 8888
 
 2. 运行
 ```python
-python main.py --model TSception
+python main.py --model basemodel --num_epochs 400
 ```
 
 3. 打开浏览器 localhost:8888， 查看训练过程
