@@ -1,4 +1,5 @@
-# Cognitive
+![](./pic/logo1.png)
+
 ## 进度条
 - baseline
 - EGGNet
