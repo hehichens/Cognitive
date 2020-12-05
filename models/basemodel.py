@@ -1,6 +1,7 @@
 import torch
 import torch.optim as optim
 import torch.nn as nn
+import torch.nn.functional as F
 
 import sys; sys.path.append("..")
 
@@ -29,7 +30,6 @@ class basemodel(nn.Module):
     def forward(self, x):
         x = self.features(x)
         # print("x = self.features(x)", x.shape)
-        # print("self.size", self.size)
         # sys.exit(0)
         # print("size:"+str(self.size))
         x = self.classifier(x)

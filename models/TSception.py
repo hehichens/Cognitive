@@ -85,8 +85,8 @@ class TSception(nn.Module):
         
     def forward(self, x):
         out = self.get_feature(x)
-        print(out.shape)
-        sys.exit(0)
+        # print(out.shape)
+        # sys.exit(0)
         out = out.view(out.size()[0], -1)
         out = self.fc1(out)
         out = self.fc2(out)

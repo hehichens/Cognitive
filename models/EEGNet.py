@@ -68,8 +68,8 @@ class EEGNet(nn.Module):
             nn.Linear(size[1], hidden_size),
             nn.Dropout(opt.dropout_rate),
             nn.ReLU(),
-            nn.Linear(hidden_size, opt.num_class),
-            nn.ReLU()
+            nn.Linear(hidden_size, opt.num_class)
+            # nn.ReLU()
         )
         
     def get_feature(self, x):
@@ -103,8 +103,8 @@ class EEGNet(nn.Module):
     def forward(self, x):
         # FC Layer
         x = self.get_feature(x)
-        print(x.shape)
-        sys.exit(0)
+        # print(x.shape)
+        # sys.exit(0)
         x = torch.sigmoid(self.fc(x))
         return x
 

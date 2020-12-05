@@ -52,6 +52,11 @@ def options():
     parser.add_argument("--patient", help="early stop threshold", \
         default=40, type=int)
 
+
+    ## Test Pramaters
+    parser.add_argument("--best", help="wheater to use the best state", \
+        default=False, type=bool)
+
     
     ## NetWork Parameters
     parser.add_argument("--num_class", help="data classfication numbers", \
@@ -59,7 +64,7 @@ def options():
     parser.add_argument("--num_channel", help="data channels size", \
         default=40, type=int)
     parser.add_argument("--num_dim", help="data dimensions", \
-        default=7680, type=int)
+        default=101, type=int)
     parser.add_argument("--sampling_rate", help="sampling rate", \
         default=128, type=int)
     parser.add_argument("--num_T", help="T num", \
@@ -72,11 +77,6 @@ def options():
         default=0.25, type=float)
     parser.add_argument("--lambda_", help="regulization network paramters", \
         default=1e-6, type=float)
-
-
-    ## Test Pramaters
-    parser.add_argument("--best", help="wheater to use the best state", \
-        default=False, type=bool)
 
 
     ## Visualize Parameters

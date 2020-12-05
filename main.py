@@ -19,6 +19,7 @@ from utils.utils import *
 from utils.options import opt
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+
 ## Network
 data = np.load(opt.train_data_path)
 label = np.load(opt.train_label_path)
@@ -42,6 +43,7 @@ train_loader, val_loader = load_EEG_Datasets(data, label, batch_size, is_val=Tru
 ## Visualize 
 vis = visdom.Visdom(env='main', port=opt.display_port)
 total_start = time.time()
+
 
 ## start training 
 print("training on {} ...".format(device))
@@ -72,6 +74,7 @@ for epoch in range(num_epochs):
         epoch+1, train_loss[epoch], train_acc[epoch], time.time() - epoch_start
     ))
 
+
     ## early stop
     if best_train_acc < train_acc[epoch]:
         best_train_acc = train_acc[epoch]
@@ -98,13 +101,16 @@ for epoch in range(num_epochs):
     val_acc.append(sum(acc) / len(acc))
     print("validate loss: %.4f, validate accuracy: %.4f"%(val_loss[epoch], val_acc[epoch]))
 
+
     ## save the best state 
-    if best_val_acc < train_acc[epoch] == 0:
-        best_val_acc = train_acc[epoch]
-        state = {
-            'state_dict': net.state_dict(),
-        }
-        save_checkpoint(state, best_checkpoint_path)
+    # if best_val_acc < train_acc[epoch]:
+    #     best_val_acc = train_acc[epoch]
+    # else:
+    #     if patient % 10 == 0:
+    #         state = {
+    #             'state_dict': net.state_dict(),
+    #         }
+    #         save_checkpoint(state, best_checkpoint_path)
 
 
     ## Visualize

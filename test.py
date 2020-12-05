@@ -22,8 +22,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 if __name__ == "__main__":
     ## Network
-    data = np.load(opt.data_path)
-    label = np.load(opt.label_path)
+    data = np.load(opt.test_data_path)
+    label = np.load(opt.test_label_path)
     net = create_model(opt).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=opt.learning_rate)
@@ -31,13 +31,14 @@ if __name__ == "__main__":
         checkpoint_path = os.path.join(opt.checkpoint_dir, opt.model+'_best.pth')
     else:
         checkpoint_path = os.path.join(opt.checkpoint_dir, opt.model+'.pth')
+    print("load weight from: ", checkpoint_path)
     checkpoint = torch.load(checkpoint_path)
     load_checkpoint(net, checkpoint)
 
 
     ## Hyper Parameters
     batch_size = opt.batch_size
-    train_loader, val_loader, test_loader = load_EEG_Datasets(data, label, batch_size, is_val=True)
+    test_loader = load_EEG_Datasets(data, label, batch_size, is_val=False)
 
 
     print("test begin !")
