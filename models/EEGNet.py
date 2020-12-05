@@ -60,35 +60,40 @@ class EEGNet(nn.Module):
         size = self.get_size()
         self.fc1 = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(size[1], 2)
+            nn.Linear(size[1], opt.num_class)
         )
         self.fc = nn.Sequential(
             nn.Flatten(),
             nn.Linear(size[1], hidden_size),
-            nn.Tanh(),
             nn.Dropout(opt.dropout_rate),
-            nn.Linear(hidden_size, opt.num_class)
+            nn.ReLU(),
+            nn.Linear(hidden_size, opt.num_class),
+            nn.ReLU()
         )
         
     def get_feature(self, x):
          # Layer 1
-        x = F.elu(self.conv1(x)) # batch_size x 16 x 40 x 101
+        x = F.relu(self.conv1(x)) # batch_size x 16 x 40 x 101
         x = self.batchnorm1(x)
-        # x = F.dropout(x, opt.dropout_rate)
+
+        if not opt.small:
+            x = F.dropout(x, opt.dropout_rate)
         
         
         # Layer 2
         x = self.conv2(x) # batch_size x 16 x 1 x 102
-        x =  F.elu(self.batchnorm2(x))
-        # x = self.pooling2(x) # batch_size x 16 x 1 x 25
-        # x = F.dropout(x, opt.dropout_rate)
+        x =  F.relu(self.batchnorm2(x))
+        if not opt.small:
+            x = self.pooling2(x) 
+            x = F.dropout(x, opt.dropout_rate)
 
         
         # Layer 3
-        x = F.elu(self.conv3(x)) # batch_size x 16 x 1 x 26
+        x = F.relu(self.conv3(x)) 
         x = self.batchnorm3(x) 
-        # x = self.pooling3(x) # batch_size x 16 x 1 x 3 
-        x = F.dropout(x, opt.dropout_rate)
+        if not opt.small:
+            x = self.pooling3(x) 
+            x = F.dropout(x, opt.dropout_rate)
 
         return x
 
@@ -96,6 +101,8 @@ class EEGNet(nn.Module):
     def forward(self, x):
         # FC Layer
         x = self.get_feature(x)
+        # print(x.shape)
+        # sys.exit(0)
         x = torch.sigmoid(self.fc(x))
         return x
 

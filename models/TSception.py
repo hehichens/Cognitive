@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import sys; sys.path.append("..")
+from utils.options import opt
 '''
 This is the models of TSception and its variant
 
@@ -17,6 +18,22 @@ Yi Ding, Neethu Robinson, Qiuhao Zeng, Dou Chen, Aung Aung Phyo Wai, Tih-Shih Le
 
 '''
 
+
+class ception(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, mode=0):
+        super(ception, self).__init__()
+        self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, \
+            kernel_size=kernel_size, stride=stride, padding=padding)
+        if mode == 0:
+            self.pool = nn.AvgPool2d(kernel_size=(1,16), stride=(1,16))
+        elif mode == 1:
+            self.pool = nn.AvgPool2d(kernel_size=(1,8), stride=(1,8))
+        
+    def forward(self, x):
+        x = F.relu(self.conv(x))
+        if not opt.small:
+            x = self.pool(x)
+        return x
     
 ################################################## TSception ######################################################
 class TSception(nn.Module):
@@ -32,27 +49,12 @@ class TSception(nn.Module):
         self.inception_window = [0.5, 0.25, 0.125, 0.0625, 0.03125]
         # by setting the convolutional kernel being (1,lenght) and the strids being 1 we can use conv2d to
         # achieve the 1d convolution operation
-        self.Tception1 = nn.Sequential(
-            nn.Conv2d(1, num_T, kernel_size=(1,int(self.inception_window[0]*sampling_rate)), stride=1, padding=0),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1,16), stride=(1,16)))
-        self.Tception2 = nn.Sequential(
-            nn.Conv2d(1, num_T, kernel_size=(1,int(self.inception_window[1]*sampling_rate)), stride=1, padding=0),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1,16), stride=(1,16)))
-        self.Tception3 = nn.Sequential(
-            nn.Conv2d(1, num_T, kernel_size=(1,int(self.inception_window[2]*sampling_rate)), stride=1, padding=0),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1,16), stride=(1,16)))
+        self.Tception1 = ception(1, num_T, kernel_size=(1,int(self.inception_window[0]*sampling_rate)), stride=1, padding=0, mode=0)
+        self.Tception2 = ception(1, num_T, kernel_size=(1,int(self.inception_window[1]*sampling_rate)), stride=1, padding=0, mode=0)
+        self.Tception3 = ception(1, num_T, kernel_size=(1,int(self.inception_window[2]*sampling_rate)), stride=1, padding=0, mode=0)
         
-        self.Sception1 = nn.Sequential(
-            nn.Conv2d(num_T, num_S, kernel_size=(int(input_size[0]),1), stride=1, padding=0),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1,8), stride=(1,8)))
-        self.Sception2 = nn.Sequential(
-            nn.Conv2d(num_T, num_S, kernel_size=(int(input_size[0]*0.5),1), stride=(int(input_size[0]*0.5),1), padding=0),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1,8), stride=(1,8)))
+        self.Sception1 = ception(num_T, num_S, kernel_size=(int(input_size[0]),1), stride=1, padding=0, mode=1)
+        self.Sception2 = ception(num_T, num_S, kernel_size=(int(input_size[0]*0.5),1), stride=(int(input_size[0]*0.5),1), padding=0, mode=1)
 
         self.BN_t = nn.BatchNorm2d(num_T)
         self.BN_s = nn.BatchNorm2d(num_S)
@@ -64,9 +66,9 @@ class TSception(nn.Module):
             nn.Dropout(dropout_rate))
         self.fc2 = nn.Sequential(
             nn.Linear(hiden, num_classes),
-            nn.LogSoftmax())
+            nn.LogSoftmax(dim=1))
         
-    def forward(self, x):
+    def get_feature(self, x):
         y = self.Tception1(x)
         out = y
         y = self.Tception2(x)
@@ -79,6 +81,12 @@ class TSception(nn.Module):
         z = self.Sception2(out)
         out_final = torch.cat((out_final,z),dim = 2)
         out = self.BN_s(out_final)
+        return out
+        
+    def forward(self, x):
+        out = self.get_feature(x)
+        # print(out.shape)
+        # sys.exit(0)
         out = out.view(out.size()[0], -1)
         out = self.fc1(out)
         out = self.fc2(out)
@@ -136,7 +144,7 @@ class Tception(nn.Module):
             nn.Linear(hiden, num_classes),
             nn.LogSoftmax())
         
-    def forward(self, x):
+    def get_features(self, x):
         y = self.Tception1(x)
         out = y
         y = self.Tception2(x)
@@ -145,9 +153,15 @@ class Tception(nn.Module):
         out = torch.cat((out,y),dim = -1)
         out = self.BN_t(out)
         out = out.view(out.size()[0], -1)
+
+    def forward(self, x):
+        out = self.get_features(x)
+        print(out.shape)
+        sys.exit(0)
         out = self.fc1(out)
         out = self.fc2(out)
         return out
+    
     def get_size(self,input_size,sampling_rate,num_T):
         data = torch.ones((1,1,input_size[0],input_size[1]))        
         y = self.Tception1(data)
@@ -197,6 +211,7 @@ class Sception(nn.Module):
         out = self.fc1(out)
         out = self.fc2(out)
         return out
+        
     def get_size(self, input_size):
         data = torch.ones((1,1,input_size[0],input_size[1]))
         y = self.Sception1(data)

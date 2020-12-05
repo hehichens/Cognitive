@@ -29,6 +29,13 @@ def save_checkpoint(state, save_path=opt.checkpoint_path):
     torch.save(state, save_path)
 
 
+## regulization parameters 
+def regulization(net, lambda_=opt.lambda_):
+    w = torch.cat([x.view(-1) for x in net.parameters()])
+    err = lambda_ * torch.sum(torch.abs(w))
+    return err
+
+
 ## make dirs
 def mkdirs(paths):
     """create empty directories if they don't exist
@@ -41,6 +48,7 @@ def mkdirs(paths):
             mkdir(path)
     else:
         mkdir(paths)
+
 
 ## make dir
 def mkdir(path):
@@ -76,75 +84,31 @@ def Accuracy(y_hat, y):
     return (pred == y).sum().item() / len(pred)
 
 ## load EEG Datasets
-def load_EEG_Datasets(data, label, batch_size=1, is_val=False):
+def load_EEG_Datasets(data, label, batch_size=1, is_val=True):
     """
-    data: np.array ==> 32X40X40X101
-    label: np.array ==> 32X40
+    data: np.array: 32 x 40 x 40 x num_dim
+    label: np.array: 32 x 40
     """
     # combine 0 and 1 dimension
-    data = np.concatenate(data, axis=0) # 1280X40X101
+    data = np.concatenate(data, axis=0) # 1280X40Xnum_dim
     label = np.concatenate(label, axis=0) # 1280
 
-    # data size: train > val > test
-    X_train, X_test, y_train, y_test = train_test_split(data, label)
-    if is_val:
-        X_val, X_test, y_val, y_test = train_test_split(X_test, y_test)
-        dataset_val = EEGDataset(X_val, y_val)
-        val_loader = DataLoader(dataset=dataset_val, batch_size=batch_size,shuffle=True, pin_memory=False)
+    # load test data
+    if is_val == False:
+        dataset = EEGDataset(data, label)
+        loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, pin_memory=False)
+        return loader
 
-
+    # data size: train:val = 4:1
+    X_train, X_val, y_train, y_val = train_test_split(data, label, test_size=opt.val_size, random_state=opt.seed)
 
     dataset_train = EEGDataset(X_train, y_train)
-    dataset_test = EEGDataset(X_test, y_test)
+    dataset_val = EEGDataset(X_val, y_val)
 
     train_loader = DataLoader(dataset=dataset_train, batch_size=batch_size, shuffle=True, pin_memory=False)
-    test_loader = DataLoader(dataset=dataset_test, batch_size=batch_size, shuffle=True, pin_memory=False)
+    val_loader = DataLoader(dataset=dataset_val, batch_size=batch_size, shuffle=True, pin_memory=False)
 
-    if is_val:
-        return train_loader, val_loader, test_loader
-    else:
-        return train_loader, test_loader
-
-
-## train network
-def train(net, data, label, num_epochs, criterion, optimizer):
-    """
-    Paramters:
-        net: networks
-        data: np.array
-        label: np.array
-        num_epochs: number of epochs
-        criterion: loss function
-        optimzier: optimzier
-
-    Example:
-    >>> net = CNN_DEAP().to(device)
-    >>> num_epochs = 10
-    >>> criterion = nn.CrossEntropyLoss()
-    >>> optimizer = optim.Adam(net.parameters()) # lr defualt:1e-3
-    >>> train(net, data, arousal_labels, num_epochs, criterion, optimizer)
-    """
-    train_loader, val_loader, test_loader = load_EEG_Datasets(data, label)
-
-    print("training on {} ...".format(device))
-    for epoch in range(num_epochs):
-        train_loss, train_acc = [], []
-        for i, (X, y) in tqdm(enumerate(train_loader)):
-            y_hat = net(X) # batch_size X 2
-            loss = criterion(y_hat, y)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            pred = y_hat.max(1)[1]
-            acc = (pred == y).sum().item() / len(pred)
-
-            train_loss.append(loss)
-            train_acc.append(acc)
-
-        print("epoch: %d, training loss: %.4f, training accuracy: %.4f"%(
-            epoch+1, sum(train_loss) / len(train_loss), sum(train_acc) / len(train_acc)
-        ))
+    return train_loader, val_loader
 
 
 ## Dynamic Import Models
@@ -200,14 +164,7 @@ if __name__ == "__main__":
     valence_labels = np.load('../datasets/data/valence_labels.npy')
 
     # test data
-    train_loader, val_loader, test_loader = load_EEG_Datasets(data, arousal_labels)
+    train_loader, val_loader = load_EEG_Datasets(data, arousal_labels)
     for i, (x, y) in enumerate(train_loader):
         print(x.shape, y.shape)
         break
-
-    # test model
-    # net = CNN_DEAP().to(device)
-    # num_epochs = 10
-    # criterion = nn.CrossEntropyLoss()
-    # optimizer = optim.Adam(net.parameters()) # lr defualt:1e-3
-    # train(net, data, arousal_labels, num_epochs, criterion, optimizer)
