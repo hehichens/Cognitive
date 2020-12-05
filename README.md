@@ -5,10 +5,10 @@
 [toc]
 
 ## 进度条
-- baseline
-- EGGNet
-- TSception
-- visdom可视化
+- baseline:white_check_mark:
+- EGGNet:white_check_mark:
+- TSception:white_check_mark:
+- visdom可视化:white_check_mark:
 
 ## 使用说明
 - models : 存放写好了的网络模型或者其他模型
@@ -100,18 +100,20 @@ python main.py --model basemodel --num_epochs 400
 
 ## 结果
 
-## Small data
+### Small data
+
+**特征处理**
+
+将每个通道的8064个数据划分为10段，计算每段的平均值、中值、最大值、最小值、标准差、方差、范围、偏度和峰度值这9个统计特征，然后加上整体8064个数据的9个统计特征，实验编号和参与者编号。 8064 -> 9*10+11=101 （40，40， 8064）-> （40，40，101）
+
+| Model|Epochs | Learning rate | Accuracy |
+| - | - | - | - |
+| | | | |
 
 
 
-| Model |Datasets|Epochs | Learning rate | Accuracy |
-| - | - | - | - | - |
-| | | | | |
 
-
-
-
-## contact me 
-
+## Contact me 
+:heart::heart::heart::wink:
 - hichens@qq.com
 - hichens1559576916@gmail.com
