@@ -59,7 +59,7 @@ def options():
     parser.add_argument("--num_channel", help="data channels size", \
         default=40, type=int)
     parser.add_argument("--num_dim", help="data dimensions", \
-        default=101, type=int)
+        default=7680, type=int)
     parser.add_argument("--sampling_rate", help="sampling rate", \
         default=128, type=int)
     parser.add_argument("--num_T", help="T num", \

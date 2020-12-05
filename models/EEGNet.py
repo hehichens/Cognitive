@@ -39,19 +39,20 @@ class EEGNet(nn.Module):
         # Layer 1
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=F[0], kernel_size=(1, 64), padding=(0, 32))
         self.batchnorm1 = nn.BatchNorm2d(F[0], False)
+        self.pooling1 = nn.MaxPool2d(kernel_size=(1, 4))
 
         
         # Layer 2
         self.conv2 = nn.Conv2d(in_channels=F[0], out_channels=D*F[0], kernel_size=(C, 1), groups=F[0])
         self.batchnorm2 = nn.BatchNorm2d(D*F[0], False)
-        self.pooling2 = nn.MaxPool2d(kernel_size=(1, 2))
+        self.pooling2 = nn.MaxPool2d(kernel_size=(1, 8))
         
         # Layer 3
         self.padding2 = nn.ZeroPad2d((2, 1, 4, 3))
         # self.conv3 = nn.Conv2d(in_channels=D*F[0], out_channels=F[1], kernel_size=(1, 16), groups=1, padding=8)
         self.conv3 = SeparableConv2d(in_channels=D*F[0], out_channels=F[1], kernel_size=(1, 16), padding=(0, 8))
         self.batchnorm3 = nn.BatchNorm2d(F[1], False)
-        self.pooling3 = nn.MaxPool2d((1, 2))
+        self.pooling3 = nn.MaxPool2d((1, 16))
         
         # FC Layer
         # NOTE: This dimension will depend on the number of timestamps per sample in your data.
@@ -77,6 +78,7 @@ class EEGNet(nn.Module):
         x = self.batchnorm1(x)
 
         if not opt.small:
+            x = self.pooling1(x)
             x = F.dropout(x, opt.dropout_rate)
         
         
@@ -101,8 +103,8 @@ class EEGNet(nn.Module):
     def forward(self, x):
         # FC Layer
         x = self.get_feature(x)
-        # print(x.shape)
-        # sys.exit(0)
+        print(x.shape)
+        sys.exit(0)
         x = torch.sigmoid(self.fc(x))
         return x
 

@@ -25,9 +25,9 @@ class ception(nn.Module):
         self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, \
             kernel_size=kernel_size, stride=stride, padding=padding)
         if mode == 0:
-            self.pool = nn.AvgPool2d(kernel_size=(1,16), stride=(1,16))
+            self.pool = nn.AvgPool2d(kernel_size=(1,32), stride=(1,32))
         elif mode == 1:
-            self.pool = nn.AvgPool2d(kernel_size=(1,8), stride=(1,8))
+            self.pool = nn.AvgPool2d(kernel_size=(1,16), stride=(1,16))
         
     def forward(self, x):
         x = F.relu(self.conv(x))
@@ -85,8 +85,8 @@ class TSception(nn.Module):
         
     def forward(self, x):
         out = self.get_feature(x)
-        # print(out.shape)
-        # sys.exit(0)
+        print(out.shape)
+        sys.exit(0)
         out = out.view(out.size()[0], -1)
         out = self.fc1(out)
         out = self.fc2(out)
@@ -232,5 +232,5 @@ if __name__ == "__main__":
     # print(model)
     pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(pytorch_total_params)
-    x = torch.rand(2, 1, 40, 101)  #1 x 1 x 4  x 1024
+    x = torch.rand(2, 1, opt.num_channel, opt.num_dim)  #1 x 1 x 4  x 1024
     print(model(x))
