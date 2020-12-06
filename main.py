@@ -45,7 +45,7 @@ vis = visdom.Visdom(env='main', port=opt.display_port)
 total_start = time.time()
 
 
-## start training 
+## Train
 print("training on {} ...".format(device))
 train_loss, train_acc = [], []
 val_loss, val_acc = [], []
@@ -85,7 +85,7 @@ for epoch in range(num_epochs):
         break
 
 
-    ## validation
+    ## Validation
     net.eval()
     loss, acc = [], []
     for i, (X, y) in enumerate(val_loader):
@@ -96,21 +96,18 @@ for epoch in range(num_epochs):
         loss_fn.backward()
         optimizer.step()
         acc.append(Accuracy(y_hat, y))
-
     val_loss.append(sum(loss) / len(loss))
     val_acc.append(sum(acc) / len(acc))
     print("validate loss: %.4f, validate accuracy: %.4f"%(val_loss[epoch], val_acc[epoch]))
 
 
-    ## save the best state 
-    # if best_val_acc < train_acc[epoch]:
-    #     best_val_acc = train_acc[epoch]
-    # else:
-    #     if patient % 10 == 0:
-    #         state = {
-    #             'state_dict': net.state_dict(),
-    #         }
-    #         save_checkpoint(state, best_checkpoint_path)
+    ## Save the best state 
+    if best_val_acc < train_acc[epoch] and (patient+1) % 10 == 0:
+        best_val_acc = train_acc[epoch]
+        state = {
+            'state_dict': net.state_dict(),
+        }
+        save_checkpoint(state, best_checkpoint_path)
 
 
     ## Visualize
@@ -125,58 +122,20 @@ for epoch in range(num_epochs):
 
 print("training done !")
 
-## save checkpoint
+
+## Save checkpoint
+net.eval()
 state = {
     'state_dict': net.state_dict(),
 }
 save_checkpoint(state, checkpoint_path)
 
 
-## wheather to test
-test_loss, test_acc = [], []
-if opt.test == True:
-    print("test begin !")
-    print("testing on {} ...".format(device))
-    net.eval()
-    for epoch in range(num_epochs):
-        loss, acc = [], []
-        epoch_start = time.time()
-        for i, (X, y) in enumerate(test_loader):
-            y_hat = net(X) # batch_size X 2
-            loss_fn = criterion(y_hat, y)
-            loss += loss_fn.item()
-
-            pred = y_hat.max(1)[1]
-            acc += (pred == y).sum().item() / len(pred)
-
-        test_loss.append(sum(loss) / len(loss))
-        test_acc.append(sum(acc) / len(acc))
-        vis.line(X=[_ for _ in range(epoch+1)],Y=np.column_stack((test_loss, test_acc)), win='test', \
-            opts={
-                'title': opt.model + '--test',
-                'dash': np.array(['solid', 'dash']),
-                'legend':['loss', 'acc'],
-                'showlegend': True
-                })
-        if (epoch + 1) % 50:
-            print("epoch: %d, testing loss: %.4f, testing accuracy: %.4f, time: %d"%(
-                epoch+1, sum(test_loss) / len(test_loss), sum(test_acc) / len(test_acc), time.time() - epoch_start))
-
-        
-
-
-    print("=="*10, "testing done !", "=="*10)
-    print("testing loss: %.4f, testing accuracy: %.4f, total time: %d"%(
-            sum(test_loss) / len(test_loss), sum(test_acc) / len(test_acc), time.time() - total_start    
-        ))
-
-
-## test
+## Test
 data = np.load(opt.test_data_path)
 label = np.load(opt.test_label_path)
 test_loader = load_EEG_Datasets(data, label, batch_size=opt.batch_size, is_val=False)
-print("=="*10)
-print("test begin !")
+print("=="*20)
 print("testing on {} ...".format(device))
 net.eval()
 loss, acc = [], []

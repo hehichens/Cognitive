@@ -36,7 +36,7 @@ label = np.concatenate(label, axis=0) # 1280
 
 # split
 X_train, X_test, y_train, y_test = train_test_split(data, label, \
-    test_size=opt.test_size)
+    test_size=opt.test_size, shuffle=True)
 
 # save 
 np.save("./data/train_data.npy", X_train)
