@@ -33,12 +33,11 @@ class ception(nn.Module):
         x = F.relu(self.conv(x))
         if not opt.small:
             x = self.pool(x)
-        x = F.dropout(x, p=0.1)
         return x
     
 ################################################## TSception ######################################################
 class TSception(nn.Module):
-    def __init__(self, opt, sampling_rate=64):
+    def __init__(self, opt, sampling_rate=128):
         num_classes = opt.num_class
         input_size = [opt.num_channel, opt.num_dim]
         num_T = opt.num_T
