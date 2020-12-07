@@ -114,10 +114,30 @@ python main.py --model basemodel --num_epochs 400
 
 | Model|Epochs | Learning rate | Accuracy |
 | - | - | - | - |
-| basemodel | 120 | 1e-4 | 0.62 |
-|  |  |  |  |
-|  |  |  |  |
+| basemodel | 40 | 1e-4 | 0.62 |
+| EEGNet | 120 | 1e-4 | 0.7417 |
+| TSception | 100 | 1e-4 | 0.78 |
 
+#### Result
+
+<p align="center">
+    <!-- baseline -->
+    <img src="pic/basemodel_overfit.png" height="440px">
+    <img src="pic/basemodel_result.png" height="440px">
+</p>
+
+<p align="center">
+    <!-- baseline -->
+    <img src="pic/EEGNet_result.png" height="440px">
+    <img src="pic/TSception_result.png" height="440px">
+</p>
+
+
+
+### Data
+
+无特征处理
+training ...
 
 
 
