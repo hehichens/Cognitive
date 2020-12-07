@@ -89,6 +89,11 @@ def load_EEG_Datasets(data, label, batch_size=1, is_val=True):
     data: np.array: 32 x 40 x 40 x num_dim
     label: np.array: 32 x 40
     """
+
+    if opt.mode == 0:
+        data = np.concatenate(data, axis=0) # 1280X40Xnum_dim
+        label = np.concatenate(label, axis=0) # 1280
+
     # load test data
     if is_val == False:
         dataset = EEGDataset(data, label)

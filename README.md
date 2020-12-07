@@ -18,11 +18,13 @@
 - methods:方法， baseline, etc
 - datasets:
   - data:存放数据
-  - *.oy:处理数据
+  - *.py:处理数据
 
 
 
 ## 数据
+
+### 数据概览
 
 [DEAP ](http://www.eecs.qmul.ac.uk/mmv/datasets/deap/index.html)
 
@@ -37,6 +39,10 @@ EEG电极：10-20国际标准的32导联电极帽；
 常利用预处理(降采样128Hz，4-45Hz带通滤波，去除眼电)后的脑电数据。
 
 ![](./pic/data.png)
+
+### 特征处理
+
+将每个通道的8064个数据划分为10段，计算每段的平均值、中值、最大值、最小值、标准差、方差、范围、偏度和峰度值这9个统计特征，然后加上整体8064个数据的9个统计特征，实验编号和参与者编号。 8064 -> 9*10+11=101 （40，40， 8064）-> （40，40，101）
 
 ## 网络结构
 
@@ -54,19 +60,19 @@ from the paper: TSception:A Deep Learning Framework for Emotion Detection Using 
 
 
 
-## Examples
+## 例子
 
 ### 数据处理
 
 ```python
-# for small data (40, 101)
+# for small data (32, 40, 40, 101)
 python split.py --data_path ./data/small_data.npy
 
-# for big data (40, 7680)
+# for big data (32, 40, 40, 7680)
 python split.py --data_path ./data/data.npy
 ```
 
-得到
+得到数据保存在`./data/`下
 
 ```
 train_data.npy
@@ -81,7 +87,7 @@ test_label.npy
 
 ### 训练
 
-1. 打开 visdom 
+1. 打开 `visdom` 
 ```
 python -m visdom.server  port 8888
 ```
@@ -94,7 +100,7 @@ python -m visdom.server  port 8888
 python main.py --model basemodel --num_epochs 400
 ```
 
-3. 打开浏览器 localhost:8888， 查看训练过程
+3. 打开浏览器` localhost:8888`， 查看训练过程
 
 
 
@@ -108,12 +114,14 @@ python main.py --model basemodel --num_epochs 400
 
 | Model|Epochs | Learning rate | Accuracy |
 | - | - | - | - |
-| | | | |
+| basemodel | 120 | 1e-4 | 0.62 |
+|  |  |  |  |
+|  |  |  |  |
 
 
 
 
-## Contact me 
+## 联系我
 :heart::heart::heart::wink:
 - hichens@qq.com
 - hichens1559576916@gmail.com

@@ -14,6 +14,8 @@ def options():
         default=0.1, type=float)
     parser.add_argument("--seed", help="random seed", \
         default=42, type=int)
+    parser.add_argument("--mode", help="split the data 1 or 2", \
+        default=0, type=int)
 
     parser.add_argument("--train_data_path", help="train data path", \
         default="./datasets/data/train_data.npy", type=str)
@@ -24,6 +26,9 @@ def options():
         default="./datasets/data/test_data.npy", type=str)
     parser.add_argument("--test_label_path", help="test label path", \
         default="./datasets/data/test_label.npy", type=str)
+
+    parser.add_argument("--shuffle", help="wheate shuffle data", \
+        default=False, type=bool)
     
     
     ## Training Parametes 
@@ -35,12 +40,12 @@ def options():
         default=False, type=bool)
     parser.add_argument("--num_epochs", help="number of epochs", \
         default=10, type=int)
-    parser.add_argument("--learning_rate", help="learning_rate", \
+    parser.add_argument("--learning_rate", help="learning rate", \
         default=1e-3, type=float)
     parser.add_argument("--batch_size", help="batch size", \
         default=256, type=int)
     parser.add_argument("--weight_decay", help="weight decay", \
-        default=0, type=float)
+        default=1e-4, type=float)
     parser.add_argument("--checkpoint_dir", help="checkpoints dir", \
         default="./weights/", type=str)
     parser.add_argument("--checkpoint_path", help="checkpoint path", \
@@ -50,7 +55,7 @@ def options():
     parser.add_argument("--normalized", help="wheather to normalize network paramters", \
         default=True, type=bool)
     parser.add_argument("--patient", help="early stop threshold", \
-        default=40, type=int)
+        default=20, type=int)
 
 
     ## Test Pramaters

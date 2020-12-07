@@ -33,16 +33,16 @@ class ception(nn.Module):
         x = F.relu(self.conv(x))
         if not opt.small:
             x = self.pool(x)
+        x = F.dropout(x, p=0.1)
         return x
     
 ################################################## TSception ######################################################
 class TSception(nn.Module):
-    def __init__(self, opt, sampling_rate=128, num_T=9, num_S=6, hiden=128, dropout_rate=0.2):
+    def __init__(self, opt, sampling_rate=64):
         num_classes = opt.num_class
         input_size = [opt.num_channel, opt.num_dim]
         num_T = opt.num_T
         num_S = opt.num_S
-        hidden = opt.hidden_size
         dropout_rate = opt.dropout_rate
         # input_size: EEG channel x datapoint
         super(TSception, self).__init__()
@@ -61,11 +61,11 @@ class TSception(nn.Module):
         size = self.get_size(input_size)
         
         self.fc1 = nn.Sequential(
-            nn.Linear(size[1], hiden),
+            nn.Linear(size[1], opt.hidden_size),
             nn.ReLU(),
             nn.Dropout(dropout_rate))
         self.fc2 = nn.Sequential(
-            nn.Linear(hiden, num_classes),
+            nn.Linear(opt.hidden_size, num_classes),
             nn.LogSoftmax(dim=1))
         
     def get_feature(self, x):

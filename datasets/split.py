@@ -30,13 +30,14 @@ label options
 data = np.load(opt.data_path)
 label = np.load(opt.label_path)
 
-# combine 0 and 1 dimension
-data = np.concatenate(data, axis=0) # 1280X40Xnum_dim
-label = np.concatenate(label, axis=0) # 1280
+# combine 0 and 1 dimension if not split data by people
+if opt.mode == 1:
+    data = np.concatenate(data, axis=0) # 1280X40Xnum_dim
+    label = np.concatenate(label, axis=0) # 1280
 
 # split
 X_train, X_test, y_train, y_test = train_test_split(data, label, \
-    test_size=opt.test_size, shuffle=True)
+    test_size=opt.test_size, shuffle=opt.shuffle)
 
 # save 
 np.save("./data/train_data.npy", X_train)

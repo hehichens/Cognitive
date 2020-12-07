@@ -17,7 +17,7 @@ import numpy as np
 
 from utils.utils import *
 from utils.options import opt
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
 
 
 if __name__ == "__main__":
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     test_loader = load_EEG_Datasets(data, label, batch_size, is_val=False)
 
 
-    print("test begin !")
+    ## Test
     print("testing on {} ...".format(device))
     net.eval()
     loss, acc = [], []
