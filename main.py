@@ -17,7 +17,7 @@ import numpy as np
 
 from utils.utils import *
 from utils.options import opt
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
 
 
 ## Network
@@ -25,7 +25,8 @@ data = np.load(opt.train_data_path)
 label = np.load(opt.train_label_path)
 net = create_model(opt).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters(), lr=opt.learning_rate, weight_decay=opt.weight_decay)
+optimizer = optim.Adam(net.parameters(), lr=opt.learning_rate, \
+    weight_decay=opt.weight_decay)
 
 checkpoint_path = os.path.join(opt.checkpoint_dir, opt.model+'.pth')
 best_checkpoint_path = os.path.join(opt.checkpoint_dir, opt.model+'_best.pth')
@@ -42,7 +43,6 @@ train_loader, val_loader = load_EEG_Datasets(data, label, batch_size, is_val=Tru
 
 ## Visualize 
 vis = visdom.Visdom(env='main', port=opt.display_port)
-total_start = time.time()
 
 
 ## Train
@@ -91,10 +91,8 @@ for epoch in range(num_epochs):
     for i, (X, y) in enumerate(val_loader):
         y_hat = net(X)
         loss_fn = criterion(y_hat, y)
+        
         loss.append(loss_fn.item())
-        optimizer.zero_grad()
-        loss_fn.backward()
-        optimizer.step()
         acc.append(Accuracy(y_hat, y))
     val_loss.append(sum(loss) / len(loss))
     val_acc.append(sum(acc) / len(acc))
@@ -102,8 +100,8 @@ for epoch in range(num_epochs):
 
 
     ## Save the best state 
-    if best_val_acc < train_acc[epoch] and (patient+1) % 10 == 0:
-        best_val_acc = train_acc[epoch]
+    if best_val_acc < val_acc[epoch]:
+        best_val_acc = val_acc[epoch]
         state = {
             'state_dict': net.state_dict(),
         }
